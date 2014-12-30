@@ -54,10 +54,17 @@ app.send = function(message) {
 
 app.fetchMessages = function() {
   var room = $('#roomSelect').val();
-  if(!room){
+  var query;
+  if (!room){
     return false;
   }
-  var query = '&where={"roomname":"'+room+'"}';
+  // If the room selected is lobby, grab all messages without room specified as
+  // well
+  if (room === 'lobby'){
+    query = '&where={"roomname":{"$in":["","lobby"]}}';
+  } else {
+    query = '&where={"roomname":"'+room+'"}';
+  }
   $.ajax({
     url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt'+query,
     type: 'GET',
