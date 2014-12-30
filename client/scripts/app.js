@@ -1,7 +1,7 @@
 
 /* Constants */
-UPDATE_INTERVAL = 5000;
-
+UPDATE_INTERVAL = 100;
+ROOM_INTERVAL = 1000;
 
 /* Globals */
 var roomNames = {};
@@ -26,10 +26,12 @@ app.init = function() {
   $('#main').on('submit','#send',function(e) {
     e.preventDefault();
     app.handleSubmit($(this).find('input#message').val());
+    $('input#message').val('')
   });
 
   // Query server at regular interval for new messages
-  setInterval(app.fetch, UPDATE_INTERVAL);
+  setInterval(app.fetchMessages, UPDATE_INTERVAL);
+  setInterval(app.fetchRooms, ROOM_INTERVAL);
 
 };
 
@@ -50,21 +52,44 @@ app.send = function(message) {
   });
 };
 
-app.fetch = function() {
+app.fetchMessages = function() {
+  var room = $('#roomSelect').val();
+  if(!room){
+    return false;
+  }
+  var query = '&where={"roomname":"'+room+'"}';
   $.ajax({
-    url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
+    url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt'+query,
     type: 'GET',
     contentType: 'application/json',
     success: function (data) {
       app.clearMessages();
       data.results.forEach(app.addMessage);
+      return true;
     },
     error: function (data) {
       // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
       console.error('chatterbox: Failed to receive message');
     }
-  })
+  });
 };
+
+app.fetchRooms = function() {
+  $.ajax({
+    url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
+    type: 'GET',
+    contentType: 'application/json',
+    success: function (data) {
+      data.results.forEach(function(e){
+        app.addRoom(e.roomname);
+      });
+    },
+    error: function (data) {
+      // see: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+      console.error('chatterbox: Failed to add rooms');
+    }
+  });
+}
 
 app.clearMessages = function() {
   $('#chats').empty();
@@ -75,12 +100,12 @@ app.addMessage = function(message) {
   $html.addClass('message');
   $html.append($('<span class="username">').text(message.username));
   $html.append($('<span class="text">').text(': ' + message.text));
-  $('#chats').prepend($html);
-  app.addRoom(message.roomname);
+  $('#chats').append($html);
 };
 
 app.addRoom = function(roomName) {
   if (roomName && typeof roomNames[roomName] === 'undefined') {
+    roomName = roomName || 'lobby'; //default unspecified rooms to lobby
     var $html = $('<option>');
     $html.addClass('room');
     $html.attr('value', roomName);
