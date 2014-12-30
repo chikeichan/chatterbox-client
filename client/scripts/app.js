@@ -5,7 +5,7 @@ ROOM_INTERVAL = 1000;
 
 /* Globals */
 var roomNames = {};
-
+var friendList = {};
 
 /* App */
 
@@ -116,6 +116,9 @@ app.addMessage = function(message) {
   $html.addClass('message');
   $html.append($('<span class="username">').text(message.username));
   $html.append($('<span class="text">').text(': ' + message.text));
+  if(!!friendList[message.username]){
+    $html.addClass('friend')
+  }
   $('#chats').append($html);
 };
 
@@ -133,7 +136,11 @@ app.addRoom = function(roomName) {
 
 app.addFriend = function(friend) {
   console.log('added friend ' + friend);
-  return true;
+  if(typeof friendList[friend] === "undefined"){
+    friendList[friend] = friend;
+  } else {
+    delete friendList[friend];
+  }
 };
 
 app.handleSubmit = function(messageText) {
