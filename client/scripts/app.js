@@ -17,18 +17,27 @@ app.init = function() {
   $('#main').on('click','.username',function() {
     app.addFriend($(this).text());
   });
-  // $('#send .submit').on('submit', function(e) {
-  //   console.log(e);
-  //   app.handleSubmit($('#message').val());
-  //   e.preventDefault();
-  //   return false;
-  // });
   $('#main').on('submit','#send',function(e) {
     e.preventDefault();
     app.handleSubmit($(this).find('input#message').val());
     $('input#message').val('')
   });
-
+  $('#main').on('change','#roomSelect',function(){
+    if($(this).val()==='createRoom'){
+      $('#input-room-name').slideDown();
+    } else {
+      $('#input-room-name').slideUp();
+    }
+  })
+  $('#main').on('keydown','#input-room-name',function(e){
+    if(e.keyCode === 13){
+      var room = $(this).val();
+      app.addRoom(room);
+      $(this).val('');
+      $('#roomSelect').val(room).trigger('change');
+    }
+  })
+  app.fetchRooms();
   // Query server at regular interval for new messages
   setInterval(app.fetchMessages, UPDATE_INTERVAL);
   setInterval(app.fetchRooms, ROOM_INTERVAL);

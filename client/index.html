@@ -21,7 +21,10 @@
       <div id="rooms">
         Room:
         <select id="roomSelect">
+          <option value="blank"></option>
+          <option id="option-create-room" value="createRoom">Create a new room</option>
         </select>
+        <input type="text" name="room" id="input-room-name" />
       </div>
       <form action="#" id="send" method="post">
         <input type="text" name="message" id="message"/>

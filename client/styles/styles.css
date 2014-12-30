@@ -83,3 +83,7 @@ form input[type=text] {
     padding: 10px;
     display: none;
 }
+
+#input-room-name {
+    display: none;
+}
